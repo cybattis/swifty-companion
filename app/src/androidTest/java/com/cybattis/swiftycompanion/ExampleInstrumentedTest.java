@@ -1,4 +1,4 @@
-package com.cybattis.SwiftyCompanion;
+package com.cybattis.swiftycompanion;
 
 import android.content.Context;
 

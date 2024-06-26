@@ -1,4 +1,4 @@
-package com.cybattis.SwiftyCompanion.profile;
+package com.cybattis.swiftycompanion.profile;
 
 import androidx.lifecycle.ViewModel;
 

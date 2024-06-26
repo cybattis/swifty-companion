@@ -1,4 +1,4 @@
-package com.cybattis.SwiftyCompanion.profile;
+package com.cybattis.swiftycompanion.profile;
 
 import androidx.lifecycle.ViewModelProvider;
 
@@ -12,14 +12,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.cybattis.SwiftyCompanion.R;
+import com.cybattis.swiftycompanion.R;
 
 public class ProfileFragment extends Fragment {
 
     private ProfileViewModel mViewModel;
 
-    public static ProfileFragment newInstance() {
-        return new ProfileFragment();
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
     }
 
     @Override
@@ -27,12 +29,4 @@ public class ProfileFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
-        // TODO: Use the ViewModel
-    }
-
 }

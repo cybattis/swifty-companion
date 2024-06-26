@@ -1,25 +1,39 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
+val properties = Properties().apply {
+    rootProject.file("local.properties").reader().use(::load)
+}
+
 android {
-    namespace = "com.cybattis.SwiftyCompanion"
+    namespace = "com.cybattis.swiftycompanion"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.cybattis.SwiftyCompanion"
+        applicationId = "com.cybattis.swiftycompanion"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders += mapOf("appAuthRedirectScheme" to "com.cybattis.swiftycompanion:/oauth2redirect")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
+            buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
+        }
+        debug {
+            buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
+            buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
         }
     }
     compileOptions {
@@ -28,6 +42,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -41,7 +56,9 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.legacy.support.v4)
+    implementation(libs.appauth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }
