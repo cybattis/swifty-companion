@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.legacy.support.v4)
     implementation(libs.appauth)
+    implementation(libs.webkit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

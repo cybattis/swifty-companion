@@ -15,7 +15,7 @@ public class AuthManager {
     private static final String TAG = "AuthManager";
     private static final Uri API42_AUTHORIZE_URI = Uri.parse("https://api.intra.42.fr/oauth/authorize");
     private static final Uri API42_TOKEN_URI = Uri.parse("https://api.intra.42.fr/oauth/token");
-            private static final Uri REDIRECT_URI = Uri.parse("http://www.swifty-companion/redirect");
+    private static final Uri REDIRECT_URI = Uri.parse("http://www.swifty-companion/redirect");
     public static final String INTENT_AUTHORIZATION_RESPONSE = "com.cybattis.swiftycompanion.AUTHORIZATION_RESPONSE";
     public static final String USED_INTENT = "USED_INTENT";
 
