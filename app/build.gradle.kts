@@ -27,13 +27,19 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isShrinkResources = false
+
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
             buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
+            buildConfigField("String", "AUTH_URL_STATE", properties["AUTH_URL_STATE"].toString())
+            buildConfigField("String", "REDIRECT_URL", properties["REDIRECT_URL"].toString())
         }
         debug {
             buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
             buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
+            buildConfigField("String", "AUTH_URL_STATE", properties["AUTH_URL_STATE"].toString())
+            buildConfigField("String", "REDIRECT_URL", properties["REDIRECT_URL"].toString())
         }
     }
     compileOptions {
@@ -58,8 +64,13 @@ dependencies {
     implementation(libs.legacy.support.v4)
     implementation(libs.appauth)
     implementation(libs.webkit)
+    implementation(libs.datastore)
+    implementation(libs.datastore.rxjava3)
+    implementation(libs.datastore.preferences.rxjava3)
+    implementation(libs.datastore.rxjava2)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit2.converter.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
 }

@@ -1,23 +1,20 @@
 package com.cybattis.swiftycompanion.backend;
 
-import android.content.Context;
+import com.cybattis.swiftycompanion.auth.Tokens;
 
-public class Api42Service {
-    private static final String TAG = "Api42Service";
-    private static Api42Service instance = null;
+import retrofit2.Call;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 
-    private Api42Service(Context context) {
-        // Private constructor
-    }
+public interface Api42Service {
 
-    public static Api42Service getInstance(Context context) {
-        if (instance == null) {
-            instance = new Api42Service(context);
-        }
-        return instance;
-    }
-
-    public void getProfile(String login) {
-        // Get profile
-    }
+    @FormUrlEncoded
+    @POST("oauth/token")
+    Call<Tokens> getToken(@Field("grant_type") String grantType,
+                          @Field("client_id") String clientId,
+                          @Field("client_secret") String clientSecret,
+                          @Field("code") String code,
+                          @Field("redirect_uri") String redirectUri,
+                          @Field("state") String state);
 }

@@ -1,6 +1,8 @@
 [versions]
 agp = "8.6.0"
 appauth = "0.7.1"
+converterGson = "2.11.0"
+gson = "2.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -9,14 +11,21 @@ material = "1.12.0"
 activity = "1.9.0"
 constraintlayout = "2.1.4"
 annotation = "1.7.1"
-lifecycleLivedataKtx = "2.8.5"
+lifecycleLivedataKtx = "2.8.6"
 lifecycleViewmodelKtx = "2.8.2"
 legacySupportV4 = "1.0.0"
+retrofit = "2.11.0"
 volley = "1.2.1"
 webkit = "1.12.1"
+datastore = "1.1.1"
+datastoreRxjava3 = "1.1.1"
+datastorePreferencesRxjava3 = "1.1.1"
+datastoreRxjava2 = "1.1.1"
 
 [libraries]
 appauth = { module = "net.openid:appauth", version = "0.11.1" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.6.1" }
@@ -25,11 +34,17 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version = "1.9.2" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 annotation = { group = "androidx.annotation", name = "annotation", version = "1.8.2" }
-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version = "2.8.5" }
+lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version = "2.8.6" }
+lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleLivedataKtx" }
 legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit2-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 volley = { module = "com.android.volley:volley", version.ref = "volley" }
 webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
+datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+datastore-rxjava3 = { group = "androidx.datastore", name = "datastore-rxjava3", version.ref = "datastoreRxjava3" }
+datastore-preferences-rxjava3 = { group = "androidx.datastore", name = "datastore-preferences-rxjava3", version.ref = "datastorePreferencesRxjava3" }
+datastore-rxjava2 = { group = "androidx.datastore", name = "datastore-rxjava2", version.ref = "datastoreRxjava2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

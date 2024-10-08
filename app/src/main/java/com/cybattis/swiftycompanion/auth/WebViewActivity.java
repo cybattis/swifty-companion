@@ -16,12 +16,12 @@ import com.cybattis.swiftycompanion.R;
 
 public class WebViewActivity extends AppCompatActivity {
     private static final String TAG  = "WebViewActivity";
-
-    String url42 = "https://api.intra.42.fr/oauth/authorize?client_id=" + BuildConfig.APP_UID +
-            "&redirect_uri=" + Uri.encode("http://www.swifty-companion/redirect") +
-            "&response_type=code" +
-            "&scope=public" +
-            "&state=abjaklovjdsklfajkdslojfkdsjfkldsjfkljdslkfjdsjfl123721389472891";
+    private final String url42 = "https://api.intra.42.fr/oauth/authorize" +
+                                 "?client_id=" + BuildConfig.APP_UID +
+                                 "&redirect_uri=" + Uri.encode(BuildConfig.REDIRECT_URL) +
+                                 "&response_type=code" +
+                                 "&scope=public" +
+                                 "&state="+ BuildConfig.AUTH_URL_STATE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +30,7 @@ public class WebViewActivity extends AppCompatActivity {
 
         WebView myWebView = findViewById(R.id.webview);
         myWebView.loadUrl(url42);
+        myWebView.clearCache(true);
         myWebView.setWebViewClient(new MyWebViewClient());
     }
 
@@ -39,13 +40,13 @@ public class WebViewActivity extends AppCompatActivity {
             Log.d(TAG, "shouldOverrideUrlLoading: " + request.getUrl().getHost());
 
             if ("www.swifty-companion".equals(request.getUrl().getHost())) {
-                // This is your website, so don't override. Let your WebView load the
-                // page.
-                Log.d(TAG, "shouldOverrideUrlLoading: " + request.getUrl().toString());
-
                 String code = request.getUrl().getQueryParameter("code");
-                Intent intentData = getIntent().putExtra("code", code);
-                setResult(Activity.RESULT_OK, intentData);
+                if (code == null || code.isEmpty())
+                    setResult(Activity.RESULT_CANCELED);
+                else {
+                    Intent intentData = getIntent().putExtra("code", code);
+                    setResult(Activity.RESULT_OK, intentData);
+                }
                 finish();
                 return true;
             }

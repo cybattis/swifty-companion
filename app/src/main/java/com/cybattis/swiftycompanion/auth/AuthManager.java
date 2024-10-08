@@ -1,71 +1,105 @@
 package com.cybattis.swiftycompanion.auth;
 
 import android.content.Context;
-import android.net.Uri;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.datastore.preferences.core.MutablePreferences;
+import androidx.datastore.preferences.core.Preferences;
+import androidx.datastore.preferences.core.PreferencesKeys;
+import androidx.datastore.preferences.rxjava3.RxPreferenceDataStoreBuilder;
+import androidx.datastore.rxjava3.RxDataStore;
 
 import com.cybattis.swiftycompanion.BuildConfig;
+import com.cybattis.swiftycompanion.backend.Api42Client;
+import com.cybattis.swiftycompanion.backend.Api42Service;
 
-import net.openid.appauth.AuthorizationRequest;
-import net.openid.appauth.AuthorizationServiceConfiguration;
-import net.openid.appauth.ResponseTypeValues;
-
-import java.io.IOException;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AuthManager {
     private static final String TAG = "AuthManager";
-    private static final Uri API42_AUTHORIZE_URI = Uri.parse("https://api.intra.42.fr/oauth/authorize");
-    private static final Uri API42_TOKEN_URI = Uri.parse("https://api.intra.42.fr/oauth/token");
-    private static final Uri REDIRECT_URI = Uri.parse("http://www.swifty-companion/redirect");
-    public static final String INTENT_AUTHORIZATION_RESPONSE = "com.cybattis.swiftycompanion.AUTHORIZATION_RESPONSE";
-    public static final String USED_INTENT = "USED_INTENT";
 
-    private Context context;
-    private static AuthManager instance = null;
-    private String token = null;
+    Api42Service service;
 
-    private AuthManager(Context context) {
+    RxDataStore<Preferences> dataStore;
+    Preferences.Key<String> TOKEN = PreferencesKeys.stringKey("token");
+    Preferences.Key<String> REFRESH_TOKEN = PreferencesKeys.stringKey("token");
+
+    private Tokens tokens;
+
+    public AuthManager(Context context) {
         context = context.getApplicationContext();
+        service = Api42Client.getClient().create(Api42Service.class);
+        dataStore = new RxPreferenceDataStoreBuilder(context, /*name=*/ "credentials").build();
+        tokens = getStoredToken();
     }
 
-    public static AuthManager getInstance(Context context) {
-        if (instance == null) {
-            instance = new AuthManager(context);
+    public Tokens getStoredToken() {
+        try {
+            Flowable<String> tokenData = dataStore.data().map(prefs -> prefs.get(TOKEN));
+            Flowable<String> refreshTokenData = dataStore.data().map(prefs -> prefs.get(REFRESH_TOKEN));
+
+            Log.d(TAG, "getToken: " + tokenData.blockingFirst());
+            Log.d(TAG, "getToken: " + refreshTokenData.blockingFirst());
+
+            return new Tokens(tokenData.blockingFirst(), refreshTokenData.blockingFirst());
+        } catch (Exception ex) {
+            Log.w(TAG, "getToken: no token");
+            Log.d(TAG, "getToken: ", ex);
+            return new Tokens("", "");
         }
-        return instance;
     }
 
-    public void generateToken() throws IOException {
-        // Generate token
+    public boolean generateToken(String code) {
+
+        Call<Tokens> getToken = service.getToken(
+                "authorization_code",
+                BuildConfig.APP_UID,
+                BuildConfig.APP_SECRET,
+                code,
+                BuildConfig.REDIRECT_URL,
+                BuildConfig.AUTH_URL_STATE);
+        getToken.enqueue(new Callback<Tokens>() {
+            @Override
+            public void onResponse(@NonNull Call<Tokens> call, @NonNull Response<Tokens> response) {
+                Tokens newTokens = response.body();
+                if (newTokens != null) {
+                    Log.d(TAG, "onResponse: " + newTokens.token);
+                    Log.d(TAG, "onResponse: " + newTokens.refresh_token);
+
+                    tokens.token = newTokens.token;
+                    tokens.refresh_token = newTokens.refresh_token;
+
+                    // Store new token
+                    dataStore.updateDataAsync(prefsIn -> {
+                        MutablePreferences mutablePreferences = prefsIn.toMutablePreferences();
+                        mutablePreferences.set(TOKEN, tokens.token);
+                        mutablePreferences.set(REFRESH_TOKEN, tokens.refresh_token);
+                        return Single.just(mutablePreferences);
+                    });
+                }
+            }
+            @Override
+            public void onFailure(@NonNull Call<Tokens> call, @NonNull Throwable throwable) {
+                call.cancel();
+            }
+        });
+
+        Log.d(TAG, "generateToken: " + getToken.isCanceled());
+        return !getToken.isCanceled();
     }
 
     public boolean isTokenValid() {
-        return token != null;
+        if (tokens.token == null || tokens.token.isEmpty())
+            return false;
+        return true;
     }
 
-    public void clearToken() {
-        token = null;
+    public Tokens getToken() {
+        return tokens;
     }
-
-    public void checkToken() {
-        // Check token
-        // if token valide go to ProfileFragment
-        // else go to LoginFragment
-    }
-
-    public static AuthorizationRequest createAuthorizationRequest() {
-
-        AuthorizationServiceConfiguration serviceConfiguration = new AuthorizationServiceConfiguration(
-                API42_AUTHORIZE_URI, API42_TOKEN_URI, null
-        );
-
-        AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
-                serviceConfiguration,
-                BuildConfig.APP_UID,
-                ResponseTypeValues.CODE,
-                REDIRECT_URI
-        );
-
-        return builder.build();
-    }
-
 }
