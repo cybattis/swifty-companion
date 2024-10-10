@@ -30,6 +30,7 @@ public class ProfileFragment extends Fragment {
     private ProfileViewModel mViewModel;
     private Api42Service service;
     private AuthManager authManager;
+    private String userID;
     private User user;
 
     public ProfileFragment() {
@@ -42,7 +43,9 @@ public class ProfileFragment extends Fragment {
         service = Api42Client.createService();
         authManager = AuthManager.getInstance((MainActivity)requireActivity());
 
-        getMeData();
+        MainActivity activity = (MainActivity)getActivity();
+        userID = activity.getUserId();
+        getUserData();
 
         mViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         mViewModel.setUserData(user);
@@ -55,17 +58,6 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
-        view.findViewById(R.id.button_logout).setOnClickListener(v -> {
-            Log.d(TAG, "onCreate: Logging out");
-            authManager.clearToken();
-            ((MainActivity)requireActivity()).navigateToLogin();
-        });
-
-//        view.findViewById(R.id.button_refresh).setOnClickListener(v -> {
-//            Log.d(TAG, "onCreate: Refreshing data");
-//            getMeData();
-//            mViewModel.setUserData(user);
-//        });
 
         TextView wallet = view.findViewById(R.id.wallet_text);
         wallet.setText(String.valueOf(user.wallet));
@@ -86,9 +78,13 @@ public class ProfileFragment extends Fragment {
         this.user = user;
     }
 
-    private void getMeData() {
+    private void getUserData() {
+        if (!authManager.isTokenValid()) {
+            authManager.generateToken();
+        }
+
         Thread thread = new Thread(() -> {
-            setUser(requestMeData());
+            setUser(requestUserData());
         });
         thread.start();
         try {
@@ -99,8 +95,8 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private User requestMeData() {
-        Call<User> getMe = service.getMe("Bearer " + authManager.getToken());
+    private User requestUserData() {
+        Call<User> getMe = service.getMe(userID, "Bearer " + authManager.getToken());
         try {
             Response<User> response = getMe.execute();
             if (response.isSuccessful()) {
