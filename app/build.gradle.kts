@@ -42,6 +42,7 @@ android {
             buildConfigField("String", "REDIRECT_URL", properties["REDIRECT_URL"].toString())
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -53,7 +54,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.datastore.rxjava2)
     implementation(libs.retrofit)
     implementation(libs.retrofit2.converter.gson)
+
+    implementation(libs.logging.interceptor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

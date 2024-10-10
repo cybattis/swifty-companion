@@ -1,14 +1,9 @@
 package com.cybattis.swiftycompanion;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -16,38 +11,16 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 
 import com.cybattis.swiftycompanion.auth.AuthManager;
-import com.cybattis.swiftycompanion.auth.WebViewActivity;
+import com.cybattis.swiftycompanion.auth.LoginFragment;
+import com.cybattis.swiftycompanion.backend.Api42Client;
+import com.cybattis.swiftycompanion.backend.Api42Service;
 import com.cybattis.swiftycompanion.profile.ProfileFragment;
-
-import net.openid.appauth.AuthorizationService;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private AuthManager authManager;
-
-    // You can do the assignment inside onAttach or onCreate, i.e, before the activity is displayed
-    ActivityResultLauncher<Intent> webViewLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Intent data = result.getData();
-                    if (data == null) {
-                        Log.d(TAG, "onActivityResult: no data");
-                        Toast.makeText(this, "Failed to login to 42", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    String code = data.getStringExtra("code");
-                    if (authManager.generateToken(code))
-                        navigateToProfile();
-                    else
-                        Toast.makeText(this, "Failed to login to 42", Toast.LENGTH_SHORT).show();
-                }
-                if (result.getResultCode() == RESULT_CANCELED) {
-                    // Failed auth
-                    Log.d(TAG, "onActivityResult: login to 42 failed");
-                }
-            });
+    private FragmentManager fragmentManager;
+    private Api42Service service;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,22 +33,25 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        findViewById(R.id.login_button).setOnClickListener(v -> doAuth());
-
-        authManager = new AuthManager(getApplicationContext());
+        service = Api42Client.createService();
+        authManager = AuthManager.getInstance(this);
+        fragmentManager = getSupportFragmentManager();
     }
 
-    private void doAuth() {
-        Intent intent = new Intent(this,
-                WebViewActivity.class);
-        webViewLauncher.launch(intent);
-    }
-
-    private void navigateToProfile() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
+    public void navigateToProfile() {
         fragmentManager.beginTransaction()
                 .replace(R.id.main, new ProfileFragment())
                 .commit();
+    }
+
+    public void navigateToLogin() {
+        fragmentManager.beginTransaction()
+                .replace(R.id.main, new LoginFragment())
+                .commit();
+    }
+
+    public Api42Service getService() {
+        return service;
     }
 
     @Override
@@ -85,5 +61,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (authManager.isTokenValid())
             navigateToProfile();
+        else
+            navigateToLogin();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "Entering onResume ...");
+        super.onResume();
+        if (authManager.isTokenValid())
+            navigateToProfile();
+        else
+            navigateToLogin();
     }
 }
