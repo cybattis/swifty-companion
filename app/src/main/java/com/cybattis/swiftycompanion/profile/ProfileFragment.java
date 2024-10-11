@@ -1,7 +1,9 @@
 package com.cybattis.swiftycompanion.profile;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,8 +14,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.cybattis.swiftycompanion.MainActivity;
 import com.cybattis.swiftycompanion.R;
 import com.cybattis.swiftycompanion.auth.AuthManager;
@@ -49,27 +55,61 @@ public class ProfileFragment extends Fragment {
 
         mViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         mViewModel.setUserData(user);
-        mViewModel.getUserData().observe(this, user -> {
+        mViewModel.getUserData().observe(this, data -> {
             Log.d(TAG, "onCreate: " + user.toString());
+
         });
+
+        // This callback is only called when MyFragment is at least started
+        OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
+            @Override
+            public void handleOnBackPressed() {
+                // Handle the back button event
+                requireActivity().getSupportFragmentManager().beginTransaction().remove(ProfileFragment.this).commit();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         TextView wallet = view.findViewById(R.id.wallet_text);
-        wallet.setText(String.valueOf(user.wallet));
+        wallet.setText(user.wallet + "₳");
 
         TextView eval_points = view.findViewById(R.id.evalpoint_text);
         eval_points.setText(String.valueOf(user.correctionPoint));
 
         TextView grade = view.findViewById(R.id.grade_text);
-        grade.setText(user.cursusUsers.get(0).grade);
+        grade.setText(user.cursusUsers.get(1).grade);
 
-        TextView level = view.findViewById(R.id.xp_text);
-        level.setText(String.valueOf(user.getLevel()));
+        TextView level = view.findViewById(R.id.cursus_text);
+        level.setText(String.valueOf(user.getCursusName()));
+
+        TextView login = view.findViewById(R.id.login_text);
+        login.setText(user.login);
+
+        TextView real_name = view.findViewById(R.id.realname_text);
+        real_name.setText(user.getFullName());
+
+        TextView text_xp = view.findViewById(R.id.level_text);
+        text_xp.setText(user.getXpString());
+
+        ProgressBar progressBar = view.findViewById(R.id.xp_progress);
+        progressBar.setProgress(user.getDecimalXp());
+
+        ImageView user_picture = view.findViewById(R.id.user_picture);
+        Glide.with(this)
+                .load(user.getImage())
+                .apply(new RequestOptions()
+                        .placeholder(R.drawable.baseline_account_circle_24) // Placeholder image
+                        .error(R.drawable.ic_launcher_background) // Error image in case of loading failure
+                )
+                .centerCrop()
+                .into(user_picture);
 
         return view;
     }
@@ -96,19 +136,19 @@ public class ProfileFragment extends Fragment {
             authManager.requestToken();
         }
 
-        Call<User> getMe = service.getMe(userID, "Bearer " + authManager.getToken());
+        Call<User> getUser = service.getUserData(userID, "Bearer " + authManager.getToken());
         try {
-            Response<User> response = getMe.execute();
+            Response<User> response = getUser.execute();
             if (response.isSuccessful()) {
                 User data = response.body();
-                Log.d(TAG, "getMeData: " + data.toString());
+                Log.d(TAG, "getUserDataData: " + data.toString());
                 return data;
             } else {
                 ApiError error = ErrorUtils.parseError(response);
-                Log.d(TAG, "getMeData: " + error.toString());
+                Log.d(TAG, "getUserDataData: " + error.toString());
             }
         } catch (Exception ex) {
-            Log.d(TAG, "getMeData: " + ex.getMessage());
+            Log.d(TAG, "getUserDataData: " + ex.getMessage());
         }
         return null;
     }

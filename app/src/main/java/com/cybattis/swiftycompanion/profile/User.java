@@ -117,17 +117,39 @@ public class User {
         return firstName + " " + lastName;
     }
 
-    public String getImage() {
-        return image.versions.medium;
-    }
-
-    public double getLevel() {
+    public String getCursusName() {
         for (CursusUser cursusUser : cursusUsers) {
             if (cursusUser.cursus.slug.equals("42cursus")) {
-                return cursusUser.level;
+                return cursusUser.cursus.name;
+            }
+        }
+        return "";
+    }
+
+    public String getImage() {
+        return image.versions.small;
+    }
+
+    public int getLevel() {
+        for (CursusUser cursusUser : cursusUsers) {
+            if (cursusUser.cursus.slug.equals("42cursus")) {
+                return (int)cursusUser.level;
             }
         }
         return 0;
+    }
+
+    public int getDecimalXp() {
+        for (CursusUser cursusUser : cursusUsers) {
+            if (cursusUser.cursus.slug.equals("42cursus")) {
+                return (int)(cursusUser.level * 100) % 100;
+            }
+        }
+        return 0;
+    }
+
+    public String getXpString() {
+        return "Level " + getLevel() + " - " + getDecimalXp() + "%";
     }
 
     public String getId() {

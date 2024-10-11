@@ -1,7 +1,10 @@
 [versions]
-agp = "8.7.0"
+agp = "8.6.0"
 appauth = "0.7.1"
+coil = "3.0.0-rc01"
+compiler = "4.12.0"
 converterGson = "2.11.0"
+glide = "4.12.0"
 gson = "2.10.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -25,7 +28,11 @@ datastoreRxjava2 = "1.1.1"
 
 [libraries]
 appauth = { module = "net.openid:appauth", version = "0.11.1" }
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+compiler = { module = "com.github.bumptech.glide:compiler", version = "4.16.0" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson" }
+glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1" }

@@ -7,4 +7,7 @@
     <color name="shrine_pink_900">#880E4F</color>
     <color name="shrine_red">#FF0000</color>
 
+    <color name="progressbarBackground">#97000000</color>
+    <color name="progressbarGreen">#9C27B0</color>
+
 </resources>

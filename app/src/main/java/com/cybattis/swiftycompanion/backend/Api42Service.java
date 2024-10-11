@@ -35,5 +35,5 @@ public interface Api42Service {
     Call<User[]> getUsers(@Header("Authorization") String accessToken, @Query(value = "filter%5Blogin%5D", encoded = true) String login);
 
     @GET("v2/users/{id}")
-    Call<User> getMe(@Path("id") String id, @Header("Authorization") String accessToken);
+    Call<User> getUserData(@Path("id") String id, @Header("Authorization") String accessToken);
 }

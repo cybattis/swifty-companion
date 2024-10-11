@@ -32,14 +32,10 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
             buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
-            buildConfigField("String", "AUTH_URL_STATE", properties["AUTH_URL_STATE"].toString())
-            buildConfigField("String", "REDIRECT_URL", properties["REDIRECT_URL"].toString())
         }
         debug {
             buildConfigField("String", "APP_UID", properties["APP_UID"].toString())
             buildConfigField("String", "APP_SECRET", properties["APP_SECRET"].toString())
-            buildConfigField("String", "AUTH_URL_STATE", properties["AUTH_URL_STATE"].toString())
-            buildConfigField("String", "REDIRECT_URL", properties["REDIRECT_URL"].toString())
         }
     }
 
@@ -62,7 +58,6 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.legacy.support.v4)
-    implementation(libs.appauth)
     implementation(libs.webkit)
     implementation(libs.datastore)
     implementation(libs.datastore.rxjava3)
@@ -70,7 +65,8 @@ dependencies {
     implementation(libs.datastore.rxjava2)
     implementation(libs.retrofit)
     implementation(libs.retrofit2.converter.gson)
-
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
     implementation(libs.logging.interceptor)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

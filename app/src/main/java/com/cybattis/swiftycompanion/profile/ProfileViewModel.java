@@ -14,6 +14,4 @@ public class ProfileViewModel extends ViewModel {
     public void setUserData(User user) {
         data.setValue(user);
     }
-
-
 }

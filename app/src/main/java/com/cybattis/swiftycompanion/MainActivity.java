@@ -1,10 +1,14 @@
 package com.cybattis.swiftycompanion;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private Api42Service service;
     private User[] users;
 
+    FrameLayout mainLayout;
     EditText login;
     String loginText;
 
@@ -52,27 +57,14 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
 
         login = findViewById(R.id.input_login);
-//        login.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                loginText = charSequence.toString();
-//                getUsers();
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//
-//            }
-//        });
+        mainLayout = findViewById(R.id.main);
         findViewById(R.id.ok_button).setOnClickListener(v -> navigateToProfile());
     }
 
     public void navigateToProfile() {
+        InputMethodManager imm = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mainLayout.getWindowToken(), 0);
+
         loginText = login.getText().toString();
         if (loginText.isEmpty()) {
             Toast.makeText(this, "Please enter a login", Toast.LENGTH_SHORT).show();
@@ -80,6 +72,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         getUsers();
+
+        if (users == null || users.length == 0) {
+            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         fragmentManager.beginTransaction()
                 .replace(R.id.main, new ProfileFragment())
