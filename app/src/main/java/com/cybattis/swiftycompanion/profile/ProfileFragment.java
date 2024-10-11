@@ -3,7 +3,6 @@ package com.cybattis.swiftycompanion.profile;
 import androidx.activity.OnBackPressedCallback;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -27,7 +27,7 @@ import com.cybattis.swiftycompanion.R;
 import com.cybattis.swiftycompanion.auth.AuthManager;
 import com.cybattis.swiftycompanion.backend.Api42Client;
 import com.cybattis.swiftycompanion.backend.Api42Service;
-import com.cybattis.swiftycompanion.backend.ApiError;
+import com.cybattis.swiftycompanion.backend.ApiResponse;
 import com.cybattis.swiftycompanion.backend.ErrorUtils;
 
 import retrofit2.Call;
@@ -52,6 +52,13 @@ public class ProfileFragment extends Fragment {
         authManager = AuthManager.getInstance((MainActivity)requireActivity());
 
         MainActivity activity = (MainActivity)getActivity();
+
+        if (activity == null || activity.getUserId() == null) {
+            Toast.makeText(getContext(), "No user selected", Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+            return;
+        }
+
         userID = activity.getUserId();
         getUserData();
 
@@ -130,7 +137,10 @@ public class ProfileFragment extends Fragment {
 
     private void getUserData() {
         Thread thread = new Thread(() -> {
-            setUser(requestUserData());
+            User user = requestUserData();
+            if (user != null)
+                setUser(user);
+            // TODO handle error
         });
         thread.start();
         try {
@@ -146,20 +156,23 @@ public class ProfileFragment extends Fragment {
             authManager.requestToken();
         }
 
+        User data;
         Call<User> getUser = service.getUserData(userID, "Bearer " + authManager.getToken());
         try {
             Response<User> response = getUser.execute();
+            ApiResponse error = ErrorUtils.parseError(response);
+
             if (response.isSuccessful()) {
-                User data = response.body();
-                Log.d(TAG, "getUserDataData: " + data.toString());
+                data = response.body();
+                data.response = error;
                 return data;
             } else {
-                ApiError error = ErrorUtils.parseError(response);
                 Log.d(TAG, "getUserDataData: " + error.toString());
+                return new User(error);
             }
         } catch (Exception ex) {
             Log.d(TAG, "getUserDataData: " + ex.getMessage());
+            return new User(new ApiResponse(500, "Network error"));
         }
-        return null;
     }
 }

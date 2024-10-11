@@ -1,5 +1,6 @@
 package com.cybattis.swiftycompanion.profile;
 
+import com.cybattis.swiftycompanion.backend.ApiResponse;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -33,6 +34,12 @@ public class User {
     public List<CursusUser> cursusUsers;
     @SerializedName("projects_users")
     public List<UserProject> projectsUsers;
+
+    public ApiResponse response;
+
+    public User(ApiResponse response) {
+        this.response = response;
+    }
 
     public static class Image {
         @SerializedName("link")

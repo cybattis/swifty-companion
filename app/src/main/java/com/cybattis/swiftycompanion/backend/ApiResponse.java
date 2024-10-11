@@ -1,11 +1,13 @@
 package com.cybattis.swiftycompanion.backend;
 
-public class ApiError {
+public class ApiResponse {
 
     private int statusCode;
     private String message;
 
-    public ApiError() {
+    public ApiResponse(int statusCode, String message) {
+        this.statusCode = statusCode;
+        this.message = message;
     }
 
     public int status() {

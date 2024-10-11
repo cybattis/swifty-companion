@@ -9,17 +9,19 @@ import retrofit2.Response;
 
 public class ErrorUtils {
 
-    public static ApiError parseError(Response<?> response) {
-        Converter<ResponseBody, ApiError> converter =
-                Api42Client.getClient().responseBodyConverter(ApiError.class, new Annotation[0]);
+    public static ApiResponse parseError(Response<?> response) {
+        Converter<ResponseBody, ApiResponse> converter =
+                Api42Client.getClient().responseBodyConverter(ApiResponse.class, new Annotation[0]);
 
-        ApiError error;
+        ApiResponse error;
 
         try {
-            assert response.errorBody() != null;
+            if (response.errorBody() == null) {
+                return new ApiResponse(response.code(), response.message());
+            }
             error = converter.convert(response.errorBody());
         } catch (IOException e) {
-            return new ApiError();
+            return new ApiResponse(500, "An error occurred");
         }
 
         return error;

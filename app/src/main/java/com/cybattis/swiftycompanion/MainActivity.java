@@ -1,14 +1,11 @@
 package com.cybattis.swiftycompanion;
 
-import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,7 +17,7 @@ import androidx.fragment.app.FragmentManager;
 import com.cybattis.swiftycompanion.auth.AuthManager;
 import com.cybattis.swiftycompanion.backend.Api42Client;
 import com.cybattis.swiftycompanion.backend.Api42Service;
-import com.cybattis.swiftycompanion.backend.ApiError;
+import com.cybattis.swiftycompanion.backend.ApiResponse;
 import com.cybattis.swiftycompanion.backend.ErrorUtils;
 import com.cybattis.swiftycompanion.profile.ProfileFragment;
 import com.cybattis.swiftycompanion.profile.User;
@@ -51,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         service = Api42Client.createService();
         authManager = AuthManager.getInstance(this);
@@ -103,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestUsersList() {
+        if (!authManager.isTokenValid()) {
+            authManager.requestToken();
+        }
+
         Call<User[]> getUsers = service.getUsers("Bearer " + authManager.getToken(), loginText);
         try {
             Response<User[]> response = getUsers.execute();
@@ -111,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 users = data;
                 Log.d(TAG, "requestUsersList: " + Arrays.toString(data));
             } else {
-                ApiError error = ErrorUtils.parseError(response);
+                ApiResponse error = ErrorUtils.parseError(response);
                 Log.e(TAG, "requestUsersList: API error: " + error.toString());
             }
         } catch (Exception ex) {

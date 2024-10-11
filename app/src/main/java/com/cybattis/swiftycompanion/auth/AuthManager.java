@@ -1,12 +1,12 @@
 package com.cybattis.swiftycompanion.auth;
 
-import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.cybattis.swiftycompanion.BuildConfig;
 import com.cybattis.swiftycompanion.MainActivity;
 import com.cybattis.swiftycompanion.backend.Api42Service;
-import com.cybattis.swiftycompanion.backend.ApiError;
+import com.cybattis.swiftycompanion.backend.ApiResponse;
 import com.cybattis.swiftycompanion.backend.ErrorUtils;
 
 import retrofit2.Call;
@@ -16,17 +16,19 @@ public class AuthManager {
     private static final String TAG = "AuthManager";
     private static AuthManager instance = null;
     Api42Service service;
-    private String token;
+    MainActivity mainActivity;
+    private TokenResponse token;
 
     public static AuthManager getInstance(MainActivity mainActivity) {
         if (instance == null) {
-            instance = new AuthManager(mainActivity.getService());
+            instance = new AuthManager(mainActivity);
         }
         return instance;
     }
 
-    public AuthManager(Api42Service _service) {
-        service = _service;
+    public AuthManager(MainActivity _mainActivity) {
+        service = _mainActivity.getService();
+        mainActivity = _mainActivity;
         generateToken();
     }
 
@@ -39,31 +41,36 @@ public class AuthManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        if (token.response.status() != 200) {
+            Log.d(TAG, "generateToken: " + token.response.message());
+            Toast.makeText(mainActivity, "Error: " + token.response.message(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void requestToken() {
-        Call<Tokens> getToken = service.getToken(
+        Call<Token> getToken = service.getToken(
                 "client_credentials",
                 BuildConfig.APP_UID,
                 BuildConfig.APP_SECRET);
 
         try {
-            Response<Tokens> response = getToken.execute();
+            Response<Token> response = getToken.execute();
+            ApiResponse apiResponse = ErrorUtils.parseError(response);
             if (response.isSuccessful()) {
-                Tokens newTokens = response.body();
+                Token newTokens = response.body();
                 if (newTokens != null) {
-                    Log.d(TAG, "onResponse: " + newTokens.token);
-                    token = newTokens.token;
-                    return;
+                    token = new TokenResponse(newTokens, apiResponse);
                 }
             } else {
-                ApiError error = ErrorUtils.parseError(response);
+                ApiResponse error = ErrorUtils.parseError(response);
                 Log.d(TAG, "onResponse: " + error.status() + " " + error.message());
+                token = new TokenResponse(new Token(""), error);
             }
         } catch (Exception ex) {
             Log.d(TAG, "onFailure: " + ex.getMessage());
+            token = new TokenResponse(new Token(""), new ApiResponse(500, "Network error"));
         }
-        token = "";
     }
 
     public boolean tokenInfo() {
@@ -76,7 +83,7 @@ public class AuthManager {
                     return info.isExpired();
                 }
             } else {
-                ApiError error = ErrorUtils.parseError(response);
+                ApiResponse error = ErrorUtils.parseError(response);
                 Log.d(TAG, "onResponse: " + error.status() + " " + error.message());
             }
         } catch (Exception ex) {
@@ -87,7 +94,7 @@ public class AuthManager {
     }
 
     public boolean isTokenValid() {
-        if (token.isEmpty())
+        if (token.getToken().isEmpty())
             return false;
 
         TokenInfoRunnable runnable = new TokenInfoRunnable();
@@ -104,7 +111,7 @@ public class AuthManager {
     }
 
     public String getToken() {
-        return token;
+        return token.getToken();
     }
 
     public class TokenInfoRunnable implements Runnable {

@@ -1,7 +1,7 @@
 package com.cybattis.swiftycompanion.backend;
 
+import com.cybattis.swiftycompanion.auth.Token;
 import com.cybattis.swiftycompanion.auth.TokenInfo;
-import com.cybattis.swiftycompanion.auth.Tokens;
 import com.cybattis.swiftycompanion.profile.User;
 
 import retrofit2.Call;
@@ -17,16 +17,9 @@ public interface Api42Service {
 
     @FormUrlEncoded
     @POST("oauth/token")
-    Call<Tokens> getToken(@Field("grant_type") String grantType,
-                          @Field("client_id") String clientId,
-                          @Field("client_secret") String clientSecret);
-
-    @FormUrlEncoded
-    @POST("oauth/token")
-    Call<Tokens> refreshToken(@Field("grant_type") String grantType,
-                              @Field("client_id") String clientId,
-                              @Field("client_secret") String clientSecret,
-                              @Field("refresh_token") String refreshToken);
+    Call<Token> getToken(@Field("grant_type") String grantType,
+                         @Field("client_id") String clientId,
+                         @Field("client_secret") String clientSecret);
 
     @GET("oauth/token/info")
     Call<TokenInfo> getTokenInfo(@Header("Authorization") String accessToken);

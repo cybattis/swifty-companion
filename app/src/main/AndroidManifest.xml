@@ -15,15 +15,7 @@
         android:theme="@style/Theme.Swiftycompanion"
         android:usesCleartextTraffic="true"
         tools:remove="android:appComponentFactory">
-        <activity
-            android:name=".auth.WebViewActivity"
-            android:exported="false" />
-        <activity
-            android:name=".login.LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".auth.LoginActivity"
-            android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
