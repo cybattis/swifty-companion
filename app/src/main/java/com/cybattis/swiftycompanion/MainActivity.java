@@ -19,7 +19,7 @@ import com.cybattis.swiftycompanion.backend.Api42Service;
 import com.cybattis.swiftycompanion.backend.ApiError;
 import com.cybattis.swiftycompanion.backend.ErrorUtils;
 import com.cybattis.swiftycompanion.profile.ProfileFragment;
-import com.cybattis.swiftycompanion.profile.Users;
+import com.cybattis.swiftycompanion.profile.User;
 
 import java.util.Arrays;
 
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private AuthManager authManager;
     private FragmentManager fragmentManager;
     private Api42Service service;
-    private Users[] users;
+    private User[] users;
 
     EditText login;
     String loginText;
@@ -52,23 +52,23 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
 
         login = findViewById(R.id.input_login);
-        login.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                loginText = charSequence.toString();
-                getUsers();
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
+//        login.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                loginText = charSequence.toString();
+//                getUsers();
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//
+//            }
+//        });
         findViewById(R.id.ok_button).setOnClickListener(v -> navigateToProfile());
     }
 
@@ -91,14 +91,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String getUserId() {
-        return users[0].id;
+        return users[0].getId();
     }
 
     private void getUsers() {
-        Thread thread = new Thread(() -> {
-            authManager.generateToken();
-            requestUsersList();
-        });
+        Thread thread = new Thread(this::requestUsersList);
         thread.start();
         try {
             thread.join();
@@ -109,11 +106,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestUsersList() {
-        Call<Users[]> getUsers = service.getUsers("Bearer " + authManager.getToken(), loginText);
+        Call<User[]> getUsers = service.getUsers("Bearer " + authManager.getToken(), loginText);
         try {
-            Response<Users[]> response = getUsers.execute();
+            Response<User[]> response = getUsers.execute();
             if (response.isSuccessful()) {
-                Users[] data = response.body();
+                User[] data = response.body();
                 users = data;
                 Log.d(TAG, "requestUsersList: " + Arrays.toString(data));
             } else {

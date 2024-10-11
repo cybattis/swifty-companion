@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
+    @SerializedName("id")
+    public int id;
     @SerializedName("email")
     public String email;
     @SerializedName("login")
@@ -126,6 +128,10 @@ public class User {
             }
         }
         return 0;
+    }
+
+    public String getId() {
+        return String.valueOf(id);
     }
 
     public static class DisplayProject {

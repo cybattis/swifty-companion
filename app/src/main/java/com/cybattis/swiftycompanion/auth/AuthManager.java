@@ -27,9 +27,21 @@ public class AuthManager {
 
     public AuthManager(Api42Service _service) {
         service = _service;
+        generateToken();
     }
 
     public void generateToken() {
+        Thread thread = new Thread(this::requestToken);
+        thread.start();
+        try {
+            thread.join();
+            Log.d(TAG, "Thread ended: " + thread.getState());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void requestToken() {
         Call<Tokens> getToken = service.getToken(
                 "client_credentials",
                 BuildConfig.APP_UID,

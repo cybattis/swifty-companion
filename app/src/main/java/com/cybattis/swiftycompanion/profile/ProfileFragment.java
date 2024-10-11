@@ -79,10 +79,6 @@ public class ProfileFragment extends Fragment {
     }
 
     private void getUserData() {
-        if (!authManager.isTokenValid()) {
-            authManager.generateToken();
-        }
-
         Thread thread = new Thread(() -> {
             setUser(requestUserData());
         });
@@ -96,6 +92,10 @@ public class ProfileFragment extends Fragment {
     }
 
     private User requestUserData() {
+        if (!authManager.isTokenValid()) {
+            authManager.requestToken();
+        }
+
         Call<User> getMe = service.getMe(userID, "Bearer " + authManager.getToken());
         try {
             Response<User> response = getMe.execute();
