@@ -10,4 +10,7 @@
     <color name="progressbarBackground">#97000000</color>
     <color name="progressbarGreen">#9C27B0</color>
 
+    <color name="validated">#4CAF50</color>
+    <color name="failed">#E91E1E</color>
+
 </resources>

@@ -3,6 +3,7 @@ package com.cybattis.swiftycompanion.profile;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class User {
@@ -91,7 +92,7 @@ public class User {
         @SerializedName("level")
         public double level;
         @SerializedName("skills")
-        public List<Object> skills;
+        public List<Skill> skills;
         @SerializedName("cursus_id")
         public int cursusId;
         @SerializedName("has_coalition")
@@ -110,6 +111,19 @@ public class User {
             public String name;
             @SerializedName("slug")
             public String slug;
+        }
+    }
+
+    public static class Skill {
+        @SerializedName("id")
+        public int id;
+        @SerializedName("name")
+        public String name;
+        @SerializedName("level")
+        public double level;
+
+        public String getLevelString() {
+            return "Level " + (int)level + " - " + (int)(level * 100) % 100 + "%";
         }
     }
 
@@ -165,13 +179,27 @@ public class User {
     public List<DisplayProject> getProjectsList() {
         List<DisplayProject> displayProjects = new ArrayList<>();
         for (UserProject project : projectsUsers) {
+            if (project.project.slug.contains("c-piscine")) {
+                continue;
+            }
             DisplayProject displayProject = new DisplayProject();
             displayProject.name = project.project.name;
             displayProject.finalMark = project.finalMark;
             displayProject.validationStatus = project.validated;
             displayProjects.add(displayProject);
         }
+        displayProjects.sort(Comparator.comparing(o -> o.name));
         return displayProjects;
+    }
+
+    public List<Skill> getSkillsList() {
+        List<Skill> skills = new ArrayList<>();
+        for (CursusUser cursusUser : cursusUsers) {
+            if (cursusUser.cursus.slug.equals("42cursus")) {
+                skills.addAll(cursusUser.skills);
+            }
+        }
+        return skills;
     }
 }
 

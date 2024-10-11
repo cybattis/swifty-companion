@@ -9,6 +9,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -110,6 +112,14 @@ public class ProfileFragment extends Fragment {
                 )
                 .centerCrop()
                 .into(user_picture);
+
+        RecyclerView recyclerView = view.findViewById(R.id.projects_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(new ProjectAdapter(user.getProjectsList(), getContext()));
+
+        RecyclerView recyclerView2 = view.findViewById(R.id.skills_view);
+        recyclerView2.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView2.setAdapter(new SkillAdapter(user.getSkillsList(), getContext()));
 
         return view;
     }
