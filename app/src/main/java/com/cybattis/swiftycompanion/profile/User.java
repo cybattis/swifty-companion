@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.List;
 
 public class User {
+    public ApiResponse response;
+
     @SerializedName("id")
     public int id;
     @SerializedName("email")
@@ -34,12 +36,6 @@ public class User {
     public List<CursusUser> cursusUsers;
     @SerializedName("projects_users")
     public List<UserProject> projectsUsers;
-
-    public ApiResponse response;
-
-    public User(ApiResponse response) {
-        this.response = response;
-    }
 
     public static class Image {
         @SerializedName("link")

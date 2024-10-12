@@ -15,9 +15,9 @@ import retrofit2.Response;
 public class AuthManager {
     private static final String TAG = "AuthManager";
     private static AuthManager instance = null;
-    Api42Service service;
-    MainActivity mainActivity;
-    private TokenResponse token;
+    private final Api42Service service;
+    private final MainActivity mainActivity;
+    private LoginResponse login;
 
     public static AuthManager getInstance(MainActivity mainActivity) {
         if (instance == null) {
@@ -33,6 +33,8 @@ public class AuthManager {
     }
 
     public void generateToken() {
+        login = new LoginResponse();
+
         Thread thread = new Thread(this::requestToken);
         thread.start();
         try {
@@ -42,44 +44,43 @@ public class AuthManager {
             throw new RuntimeException(e);
         }
 
-        if (token.response.status() != 200) {
-            Log.d(TAG, "generateToken: " + token.response.message());
-            Toast.makeText(mainActivity, "Error: " + token.response.message(), Toast.LENGTH_SHORT).show();
+        if (login.response.status() != 200) {
+            Toast.makeText(mainActivity, login.response.message(), Toast.LENGTH_SHORT).show();
         }
     }
 
     public void requestToken() {
-        Call<Token> getToken = service.getToken(
+        Call<LoginResponse> getToken = service.getToken(
                 "client_credentials",
                 BuildConfig.APP_UID,
                 BuildConfig.APP_SECRET);
 
         try {
-            Response<Token> response = getToken.execute();
-            ApiResponse apiResponse = ErrorUtils.parseError(response);
+            Response<LoginResponse> response = getToken.execute();
             if (response.isSuccessful()) {
-                Token newTokens = response.body();
-                if (newTokens != null) {
-                    token = new TokenResponse(newTokens, apiResponse);
+                LoginResponse newLogin = response.body();
+                if (newLogin != null) {
+                    login.token = newLogin.token;
+                    login.response = new ApiResponse(200, "Token generated");
                 }
             } else {
-                ApiResponse error = ErrorUtils.parseError(response);
-                Log.d(TAG, "onResponse: " + error.status() + " " + error.message());
-                token = new TokenResponse(new Token(""), error);
+                login.response = ErrorUtils.parseError(response);
+                Log.d(TAG, "onResponse: " + login.response.status() + " " + login.response.message());
             }
         } catch (Exception ex) {
+            login.response = new ApiResponse(500, "Network error");
             Log.d(TAG, "onFailure: " + ex.getMessage());
-            token = new TokenResponse(new Token(""), new ApiResponse(500, "Network error"));
         }
     }
 
     public boolean tokenInfo() {
-        Call<TokenInfo> tokenInfo = service.getTokenInfo("Bearer " + token);
+        Call<TokenResponse> tokenInfo = service.getTokenInfo("Bearer " + login.getToken());
         try {
-            Response<TokenInfo> response = tokenInfo.execute();
+            Response<TokenResponse> response = tokenInfo.execute();
             if (response.isSuccessful()) {
-                TokenInfo info = response.body();
+                TokenResponse info = response.body();
                 if (info != null) {
+                    info = response.body();
                     return info.isExpired();
                 }
             } else {
@@ -94,7 +95,7 @@ public class AuthManager {
     }
 
     public boolean isTokenValid() {
-        if (token.getToken().isEmpty())
+        if (login.getToken().isEmpty())
             return false;
 
         TokenInfoRunnable runnable = new TokenInfoRunnable();
@@ -103,15 +104,15 @@ public class AuthManager {
         try {
             thread.join();
             Log.d(TAG, "Thread ended: " + thread.getState());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            Log.e(TAG, "isTokenValid: " + e.getMessage(), e);
         }
 
         return !runnable.isExpired();
     }
 
     public String getToken() {
-        return token.getToken();
+        return login.getToken();
     }
 
     public class TokenInfoRunnable implements Runnable {

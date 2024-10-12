@@ -5,6 +5,11 @@ public class ApiResponse {
     private int statusCode;
     private String message;
 
+    public ApiResponse() {
+        this.statusCode = 0;
+        this.message = "";
+    }
+
     public ApiResponse(int statusCode, String message) {
         this.statusCode = statusCode;
         this.message = message;

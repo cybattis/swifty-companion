@@ -54,13 +54,17 @@ public class ProfileFragment extends Fragment {
         MainActivity activity = (MainActivity)getActivity();
 
         if (activity == null || activity.getUserId() == null) {
-            Toast.makeText(getContext(), "No user selected", Toast.LENGTH_SHORT).show();
             requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
             return;
         }
 
         userID = activity.getUserId();
         getUserData();
+        if (user.response.status() != 200) {
+            Toast.makeText(requireActivity(), user.response.message(), Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+            return;
+        }
 
         mViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         mViewModel.setUserData(user);
@@ -69,11 +73,9 @@ public class ProfileFragment extends Fragment {
 
         });
 
-        // This callback is only called when MyFragment is at least started
         OnBackPressedCallback callback = new OnBackPressedCallback(true /* enabled by default */) {
             @Override
             public void handleOnBackPressed() {
-                // Handle the back button event
                 requireActivity().getSupportFragmentManager().beginTransaction().remove(ProfileFragment.this).commit();
             }
         };
@@ -131,17 +133,10 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
-    private void setUser(User user) {
-        this.user = user;
-    }
-
     private void getUserData() {
-        Thread thread = new Thread(() -> {
-            User user = requestUserData();
-            if (user != null)
-                setUser(user);
-            // TODO handle error
-        });
+        user = new User();
+
+        Thread thread = new Thread(this::requestUserData);
         thread.start();
         try {
             thread.join();
@@ -151,28 +146,24 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private User requestUserData() {
+    private void requestUserData() {
         if (!authManager.isTokenValid()) {
             authManager.requestToken();
         }
-
-        User data;
         Call<User> getUser = service.getUserData(userID, "Bearer " + authManager.getToken());
         try {
             Response<User> response = getUser.execute();
-            ApiResponse error = ErrorUtils.parseError(response);
-
             if (response.isSuccessful()) {
-                data = response.body();
-                data.response = error;
-                return data;
+                user = response.body();
+                user.response = new ApiResponse(200, "OK");
             } else {
+                ApiResponse error = ErrorUtils.parseError(response);
                 Log.d(TAG, "getUserDataData: " + error.toString());
-                return new User(error);
+                user.response = ErrorUtils.parseError(response);
             }
         } catch (Exception ex) {
             Log.d(TAG, "getUserDataData: " + ex.getMessage());
-            return new User(new ApiResponse(500, "Network error"));
+            user.response = new ApiResponse(500, "Network error");
         }
     }
 }

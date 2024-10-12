@@ -1,5 +1,5 @@
 [versions]
-agp = "8.6.0"
+agp = "8.6.1"
 appauth = "0.7.1"
 coil = "3.0.0-rc01"
 compiler = "4.12.0"

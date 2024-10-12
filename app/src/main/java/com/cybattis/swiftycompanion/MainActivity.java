@@ -1,5 +1,6 @@
 package com.cybattis.swiftycompanion;
 
+import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,8 +23,6 @@ import com.cybattis.swiftycompanion.backend.ErrorUtils;
 import com.cybattis.swiftycompanion.profile.ProfileFragment;
 import com.cybattis.swiftycompanion.profile.User;
 
-import java.util.Arrays;
-
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -32,12 +31,13 @@ public class MainActivity extends AppCompatActivity {
     private AuthManager authManager;
     private FragmentManager fragmentManager;
     private Api42Service service;
-    private User[] users;
+    private User userID;
 
     FrameLayout mainLayout;
     EditText login;
     String loginText;
 
+    @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,10 +70,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        getUsers();
-
-        if (users == null || users.length == 0) {
-            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
+        if (!getUsers()) {
+            Toast.makeText(this, userID.response.message(), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -81,17 +79,18 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.main, new ProfileFragment())
                 .commit();
     }
-
     public Api42Service getService() {
         return service;
     }
 
     public String getUserId() {
-        return users[0].getId();
+        return userID.getId();
     }
 
-    private void getUsers() {
-        Thread thread = new Thread(this::requestUsersList);
+    private boolean getUsers() {
+        userID = new User();
+
+        Thread thread = new Thread(this::requestUserID);
         thread.start();
         try {
             thread.join();
@@ -99,9 +98,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        return userID.response.status() == 200;
     }
 
-    private void requestUsersList() {
+    private void requestUserID() {
         if (!authManager.isTokenValid()) {
             authManager.requestToken();
         }
@@ -110,15 +111,23 @@ public class MainActivity extends AppCompatActivity {
         try {
             Response<User[]> response = getUsers.execute();
             if (response.isSuccessful()) {
-                User[] data = response.body();
-                users = data;
-                Log.d(TAG, "requestUsersList: " + Arrays.toString(data));
+               User[] data = response.body();
+                if (data != null) {
+                    if (data.length == 0) {
+                        userID.response = new ApiResponse(404, "User not found");
+                    } else {
+                        userID = data[0];
+                        userID.response = new ApiResponse(200, "OK");
+                    }
+                }
             } else {
                 ApiResponse error = ErrorUtils.parseError(response);
-                Log.e(TAG, "requestUsersList: API error: " + error.toString());
+                Log.e(TAG, "requestUserID: API error: " + error.toString());
+                userID.response = ErrorUtils.parseError(response);
             }
         } catch (Exception ex) {
-            Log.e(TAG, "requestUsersList: " + ex.getMessage());
+            Log.e(TAG, "requestUserID: " + ex.getMessage());
+            userID.response = new ApiResponse(500, "Network error");
         }
     }
 }
