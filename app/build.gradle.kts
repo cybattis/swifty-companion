@@ -13,6 +13,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        manifestPlaceholders += mapOf("appAuthRedirectScheme" to "com.cybattis.swiftycompanion:/oauth2redirect")
         applicationId = "com.cybattis.swiftycompanion"
         minSdk = 29
         targetSdk = 34
@@ -20,8 +21,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        manifestPlaceholders += mapOf("appAuthRedirectScheme" to "com.cybattis.swiftycompanion:/oauth2redirect")
     }
 
     buildTypes {
